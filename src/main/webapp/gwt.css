@@ -1,34 +1,114 @@
-/** Add css rules here for your application. */
 
+body {
+    width: 100%;
+    height: 100%;
+}
 
-/** Example rules used by the template application (remove for your app) */
 h1 {
-  font-size: 2em;
-  font-weight: bold;
-  color: #777777;
-  margin: 40px 0px 70px;
-  text-align: center;
+    font-size: 2em;
+    font-weight: bold;
+    color: #777777;
+    margin: 40px 0 70px;
+    text-align: center;
 }
 
-.sendButton {
-  display: block;
-  font-size: 16pt;
+.screenPanel{
+    position: absolute;
+    left: 0;
+    right: 0;
+    margin: 0 auto;
+    top: 50%;
+    transform: translate(0, -50%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
 
-/** Most GWT widgets already have a style name defined */
-.gwt-DialogBox {
-  width: 400px;
+.inputLabel {
+    margin-top: 20px;
+    font-size: x-large;
+    text-align: center;
+    justify-self: center;
+    align-self: center;
 }
 
-.dialogVPanel {
-  margin: 5px;
+.numberField {
+    width: 110px;
+    margin-top: 30px;
+    margin-left: 100px;
+    font-size: 18px;
+    padding: 8px 0;
+    border: 1px solid #ccc;
+    border-top: 1px solid #999;
+    text-align: center;
+}
+
+.button{
+    font-size: 18px;
+    display: inline-block;
+    border-radius: 4px;
+    text-align: center;
+    justify-self: center;
+    align-self: center;
+}
+
+.enterButton {
+    width: 110px;
+    margin-top: 30px;
+    margin-left: 100px;
+    padding: 10px 0;
+    background-color: #008CBA;
+    color: white;
+    border: none;
+    position: center;
+}
+
+.column{
+    margin-top: 30px;
+    margin-left: 20px;
+    text-align: center;
+}
+
+.speedLabel {
+    width: 120px;
+    margin-top: 40px;
+    font-size: small;
+    text-align: center;
+}
+
+.speedField {
+    width: 120px;
+    margin-top: 30px;
+    font-size: 18px;
+    padding: 8px 0;
+    border: 1px solid #ccc;
+    border-top: 1px solid #999;
+    text-align: center;
+}
+
+.numberButton {
+    margin-top: 10px;
+    padding: 10px 0;
+    width: 100px;
+    background-color: #008CBA;
+    color: white;
+    border: #008CBA;
+}
+
+.functionalButton {
+    margin-top: 10px;
+    padding: 10px 0;
+    width: 120px;
+    background-color: #216300;
+    color: white;
+    border: #216300;
 }
 
 .serverResponseLabelError {
-  color: red;
-}
-
-/** Set ids using widget.getElement().setId("idOfElement") */
-#closeButton {
-  margin: 15px 6px 6px;
+    margin-top: 30px;
+    font-size: large;
+    color: red;
+    text-align: center;
 }

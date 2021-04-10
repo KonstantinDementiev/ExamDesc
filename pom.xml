@@ -13,8 +13,8 @@
   <properties>
 
     <!-- Setting maven.compiler.source to something different to 1.8
-         needs that you configure the sourceLevel in gwt-maven-plugin since
-         GWT compiler 2.8 requires 1.8 (see gwt-maven-plugin block below) -->
+         needs that you configure the sourceLevel in Gwt-maven-plugin since
+         GWT compiler 2.8 requires 1.8 (see Gwt-maven-plugin block below) -->
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
 
@@ -37,27 +37,39 @@
   </dependencyManagement>
 
   <dependencies>
+
     <dependency>
       <groupId>com.google.gwt</groupId>
       <artifactId>gwt-servlet</artifactId>
       <scope>runtime</scope>
     </dependency>
+
     <dependency>
       <groupId>com.google.gwt</groupId>
       <artifactId>gwt-user</artifactId>
       <scope>provided</scope>
     </dependency>
+
     <dependency>
       <groupId>com.google.gwt</groupId>
       <artifactId>gwt-dev</artifactId>
       <scope>provided</scope>
     </dependency>
+
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.11</version>
+      <groupId>org.testng</groupId>
+      <artifactId>testng</artifactId>
+      <version>7.4.0</version>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <version>3.19.0</version>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
   <build>
@@ -88,21 +100,21 @@
           <sourceLevel>1.8</sourceLevel>
           <!-- Compiler configuration -->
           <compilerArgs>
-            <!-- Ask GWT to create the Story of Your Compile (SOYC) (gwt:compile) -->
+            <!-- Ask GWT to create the Story of Your Compile (SOYC) (Gwt:compile) -->
             <arg>-compileReport</arg>
             <arg>-XcompilerMetrics</arg>
           </compilerArgs>
           <!-- DevMode configuration -->
           <warDir>${project.build.directory}/${project.build.finalName}</warDir>
           <classpathScope>compile+runtime</classpathScope>
-          <!-- URL(s) that should be opened by DevMode (gwt:devmode). -->
+          <!-- URL(s) that should be opened by DevMode (Gwt:devmode). -->
           <startupUrls>
             <startupUrl>gwt.html</startupUrl>
           </startupUrls>
         </configuration>
       </plugin>
 
-      <!-- Skip normal test execution, we use gwt:test instead -->
+      <!-- Skip normal test execution, we use Gwt:test instead -->
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.17</version>
