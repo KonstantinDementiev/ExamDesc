@@ -1,22 +1,31 @@
 package com.client;
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.*;
 import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.EventListener;
+import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.*;
 import com.shared.FieldVerifier;
+import com.shared.NumberGenerator;
 
 import java.util.Arrays;
-import java.util.Random;
+
+import static com.client.WidgetExtractor.getWidget;
 
 public class Gwt implements EntryPoint {
 
+    private final static int DEFAULT_TIME_DELAY = 200;
+    private final GwtServiceAsync gwtServiceAsync = GWT.create(GwtService.class);
     private VerticalPanel introScreenPanel;
     private HorizontalPanel sortScreenPanel;
+    private DialogBox dialogBox;
     private int[] originalNumbers;
     private int[] sortedNumbers;
     private boolean isIncreasingOrder = true;
+    private boolean isSortingGoOn = true;
+    private Timer elapsedTimer;
 
     public void onModuleLoad() {
 
@@ -41,19 +50,16 @@ public class Gwt implements EntryPoint {
                 Label errorLabel = (Label) getWidget(DOM.getElementById("errorLabel"));
                 errorLabel.setText("");
                 int numberCount = FieldVerifier.getNumberCount(numberField.getText());
-                if (FieldVerifier.isNumberInvalid(numberCount)) {
+                if (FieldVerifier.isCountInvalid(numberCount)) {
                     errorLabel.setText("Please enter a number from 1 to 100");
                     return;
                 }
                 introScreenPanel.setVisible(false);
                 sortScreenPanel = createSortScreen(numberCount);
                 RootPanel.get("panelContainer").add(sortScreenPanel);
-
             }
         }
-
         Button enterButton = (Button) getWidget(DOM.getElementById("enterButton"));
-
         IntroButtonHandler handler = new IntroButtonHandler();
         enterButton.addClickHandler(handler);
         numberField.addKeyUpHandler(handler);
@@ -91,7 +97,7 @@ public class Gwt implements EntryPoint {
         int columnCount = numberCount / 10 + 1;
         int numberCountInColumn;
         int buttonIndex;
-        originalNumbers = generateNumbers(numberCount);
+        originalNumbers = NumberGenerator.generateNumbers(numberCount);
         HorizontalPanel horizontalPanel = new HorizontalPanel();
         horizontalPanel.setStyleName("screenPanel");
         VerticalPanel[] columns = new VerticalPanel[columnCount];
@@ -107,6 +113,18 @@ public class Gwt implements EntryPoint {
                 button.addStyleName("numberButton");
                 button.getElement().setId("button_" + buttonIndex);
                 button.setText(String.valueOf(originalNumbers[buttonIndex]));
+                class NumberButtonHandler implements ClickHandler {
+                    public void onClick(ClickEvent event) {
+                        if (Integer.parseInt(button.getText()) > 30) {
+                            showMessageBox("Please select a value smaller or equal to 30");
+                        } else {
+                            originalNumbers = NumberGenerator.generateNumbers(numberCount);
+                            sortedNumbers = originalNumbers;
+                            changeButtonsView(new int[]{0});
+                        }
+                    }
+                }
+                button.addClickHandler(new NumberButtonHandler());
                 columns[i].add(button);
             }
             horizontalPanel.add(columns[i]);
@@ -133,36 +151,50 @@ public class Gwt implements EntryPoint {
         resetButton.addStyleName("functionalButton");
         speedLabel.setStyleName("speedLabel");
         speedInput.setStyleName("speedField");
-        speedInput.setText("1");
 
         class ResetButtonHandler implements ClickHandler {
             public void onClick(ClickEvent event) {
                 sortedNumbers = null;
                 sortScreenPanel.clear();
                 introScreenPanel.setVisible(true);
+                if (elapsedTimer != null) elapsedTimer.cancel();
             }
         }
         resetButton.addClickHandler(new ResetButtonHandler());
 
-        class SortButtonHandler implements ClickHandler, KeyUpHandler {
+        class SortButtonHandler implements ClickHandler, KeyDownHandler {
             public void onClick(ClickEvent event) {
                 sortNumbers();
             }
-            public void onKeyUp(KeyUpEvent event) {
+
+            public void onKeyDown(KeyDownEvent event) {
                 if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
                     sortNumbers();
                 }
             }
+
             private void sortNumbers() {
-                if(sortedNumbers == null){
+                isSortingGoOn = true;
+                if (elapsedTimer != null) elapsedTimer.cancel();
+                int timeDelayInput = FieldVerifier.getThreadDelay(speedInput.getText());
+                int timeDelay = timeDelayInput == DEFAULT_TIME_DELAY
+                        ? DEFAULT_TIME_DELAY : timeDelayInput * 1000;
+                if (sortedNumbers == null) {
                     sortedNumbers = Arrays.copyOf(originalNumbers, originalNumbers.length);
                 }
                 isIncreasingOrder = !isIncreasingOrder;
-                quickSort(sortedNumbers, 0, sortedNumbers.length - 1);
-                for (int i = 0; i < sortedNumbers.length; i++) {
-                    Button button = (Button) getWidget(DOM.getElementById("button_" + i));
-                    button.setText(String.valueOf(sortedNumbers[i]));
-                }
+                sendOriginalArrayToServer();
+                elapsedTimer = new Timer() {
+                    public void run() {
+                        if (!isSortingGoOn) {
+                            allButtonsSetSortedView();
+                            elapsedTimer.cancel();
+                        } else {
+                            getCurrentArrayFromServer();
+                        }
+                    }
+                };
+                elapsedTimer.scheduleRepeating(timeDelay);
             }
         }
         sortButton.addClickHandler(new SortButtonHandler());
@@ -175,67 +207,75 @@ public class Gwt implements EntryPoint {
         return functionalPanel;
     }
 
+    private void sendOriginalArrayToServer() {
+        gwtServiceAsync.sendOriginalArray(isIncreasingOrder, sortedNumbers, new AsyncCallback<String>() {
+            @Override
+            public void onFailure(Throwable throwable) {
+                showMessageBox("Sending array to server - Failure");
+            }
+
+            @Override
+            public void onSuccess(String result) {
+                changeButtonsView(new int[]{0});
+            }
+        });
+    }
+
+    private void getCurrentArrayFromServer() {
+        gwtServiceAsync.getCurrentArray(new AsyncCallback<int[][]>() {
+            @Override
+            public void onFailure(Throwable throwable) {
+                showMessageBox("Receiving array from server - Failure");
+            }
+
+            @Override
+            public void onSuccess(int[][] result) {
+                if (result[1][0] == 1) isSortingGoOn = false;
+                sortedNumbers = result[0];
+                changeButtonsView(result[1]);
+            }
+        });
+    }
+
     private VerticalPanel createNewColumn() {
         VerticalPanel verticalPanel = new VerticalPanel();
         verticalPanel.setStyleName("column");
         return verticalPanel;
     }
 
-    private static IsWidget getWidget(com.google.gwt.dom.client.Element element) {
-        EventListener listener = DOM.getEventListener(element);
-        if (listener == null) {
-            throw new IllegalArgumentException();
-        }
-        if (listener instanceof Widget) {
-            return (Widget) listener;
-        }
-        throw new IllegalArgumentException();
+    private void showMessageBox(String message) {
+        if (dialogBox == null) dialogBox = new DialogBox();
+        dialogBox.setHTML(message);
+        dialogBox.center();
+        Button closeDialogButton = new Button("OK");
+        dialogBox.add(closeDialogButton);
+        dialogBox.show();
+        closeDialogButton.setFocus(true);
+        closeDialogButton.addClickHandler(clickEvent -> {
+            dialogBox.clear();
+            dialogBox.hide(true);
+        });
     }
 
-    private int[] generateNumbers(int numberCount) {
-        int minValue = 1;
-        int minLimit = 30;
-        int maxValue = 1000;
-        int[] result = new int[numberCount];
-        boolean isAllValuesOverThanLimit = true;
-        Random random = new Random();
-        do {
-            for (int i = 0; i < numberCount; i++) {
-                result[i] = random.nextInt(maxValue - minValue) + minValue;
-                isAllValuesOverThanLimit = isAllValuesOverThanLimit && result[i] > minLimit;
+    private void changeButtonsView(int[] indexes) {
+        for (int k = 0; k < sortedNumbers.length; k++) {
+            Button button = (Button) getWidget(DOM.getElementById("button_" + k));
+            button.setText(String.valueOf(sortedNumbers[k]));
+            button.setStyleName("button");
+            button.addStyleName("numberButton");
+            for (int i = 1; i < indexes.length; i++) {
+                if (k == indexes[i]) {
+                    button.addStyleName("buttonIterated" + i);
+                }
             }
         }
-        while (isAllValuesOverThanLimit);
-        return result;
     }
 
-    private void quickSort(int[] arr, int begin, int end) {
-        if (begin < end) {
-            int partitionIndex = partition(arr, begin, end);
-            quickSort(arr, begin, partitionIndex - 1);
-            quickSort(arr, partitionIndex + 1, end);
+    private void allButtonsSetSortedView() {
+        for (int k = 0; k < originalNumbers.length; k++) {
+            Button button = (Button) getWidget(DOM.getElementById("button_" + k));
+            button.setStyleName("numberButtonSorted");
         }
-    }
-
-    private int partition(int[] arr, int begin, int end) {
-        int pivot = arr[end];
-        int i = (begin - 1);
-        for (int j = begin; j < end; j++) {
-            if (getSortOrder(arr[j], pivot)) {
-                i++;
-                int swapTemp = arr[i];
-                arr[i] = arr[j];
-                arr[j] = swapTemp;
-            }
-        }
-        int swapTemp = arr[i + 1];
-        arr[i + 1] = arr[end];
-        arr[end] = swapTemp;
-        return i + 1;
-    }
-
-    private boolean getSortOrder(int a, int b) {
-        return isIncreasingOrder ? a <= b : a >= b;
     }
 
 }

@@ -2,25 +2,34 @@ package com.shared;
 
 public class FieldVerifier {
 
-    private final static int MIN_NUMBER = 1;
-    private final static int MAX_NUMBER = 100;
+    private final static int MIN_COUNT = 1;
+    private final static int MAX_COUNT = 100;
+    private final static int DEFAULT_THREAD_SLEEP = 200;
 
     public static int getNumberCount(String number) {
         if (number == null) {
             throw new IllegalArgumentException("Input is null.");
         }
-
         try {
             return Integer.parseInt(number);
         } catch (NumberFormatException e) {
-            e.printStackTrace();
+            return -1;
         }
-        return 0;
     }
 
-    public static boolean isNumberInvalid(int number) {
-        return number < MIN_NUMBER || number > MAX_NUMBER;
+    public static boolean isCountInvalid(int count) {
+        return count < MIN_COUNT || count > MAX_COUNT;
     }
 
+    public static int getThreadDelay(String number) {
+        if (number == null || number.isEmpty()) {
+            return DEFAULT_THREAD_SLEEP;
+        }
+        try {
+            return Integer.parseInt(number);
+        } catch (NumberFormatException e) {
+            throw new NumberFormatException("Input is incorrect.");
+        }
+    }
 
 }

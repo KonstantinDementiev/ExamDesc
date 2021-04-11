@@ -1,17 +1,23 @@
 package com.server;
 
 import com.client.GwtService;
-import com.shared.FieldVerifier;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class GwtServiceImpl extends RemoteServiceServlet implements GwtService {
 
-    public String gwtServer(String input) throws IllegalArgumentException {
+    private NumberSorter numberSorter;
 
-        if (FieldVerifier.isNumberInvalid(FieldVerifier.getNumberCount(input))) {
-            throw new IllegalArgumentException("Number must be from 1 to 1000");
-        }
-        return "Number is valid.";
+    @Override
+    public String sendOriginalArray(boolean isIncreasingOrder, int[] originalNumbers) {
+        numberSorter = new NumberSorter(isIncreasingOrder, originalNumbers);
+        numberSorter.setPriority(1);
+        numberSorter.start();
+        return "Sorting started!";
     }
+    @Override
+    public int[][] getCurrentArray() {
+        return numberSorter.getCurrentSortedArray();
+    }
+
 
 }
