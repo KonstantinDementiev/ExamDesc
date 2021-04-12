@@ -5,6 +5,6 @@
 <module rename-to='gwt'>
   <inherits name='com.gwt'/>
 
-  <servlet path="/gwt/greet" class="com.server.GwtServiceImpl" />
+  <servlet path="/gwt/index" class="com.server.GwtServiceImpl" />
 
 </module>

@@ -1,10 +1,8 @@
 package com.shared;
 
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
+import static org.testng.Assert.*;
 
 public class FieldVerifierTest {
 
@@ -17,23 +15,23 @@ public class FieldVerifierTest {
         FieldVerifier.getNumberCount(null);
     }
 
-    @Test(expectedExceptions = NumberFormatException.class)
+    @Test
     public void when_count_input_is_not_numeric_then_throw_exception() {
-        FieldVerifier.getNumberCount("something");
+        assertEquals(FieldVerifier.getNumberCount("something"), -1);
     }
 
-    @Test(expectedExceptions = NumberFormatException.class)
+    @Test
     public void when_count_input_is_float_then_throw_exception() {
-        FieldVerifier.getNumberCount("15.6");
+        assertEquals(FieldVerifier.getNumberCount("15.6"), -1);
     }
 
     @Test
     public void isNumberValid_test() {
-        Assert.assertFalse(FieldVerifier.isCountInvalid(-1));
-        Assert.assertFalse(FieldVerifier.isCountInvalid(MIN_COUNT - 1));
-        Assert.assertFalse(FieldVerifier.isCountInvalid(MAX_COUNT + 1));
-        assertTrue(FieldVerifier.isCountInvalid(MIN_COUNT));
-        assertTrue(FieldVerifier.isCountInvalid(MAX_COUNT));
+        assertTrue(FieldVerifier.isCountInvalid(-1));
+        assertTrue(FieldVerifier.isCountInvalid(MIN_COUNT - 1));
+        assertTrue(FieldVerifier.isCountInvalid(MAX_COUNT + 1));
+        assertFalse(FieldVerifier.isCountInvalid(MIN_COUNT));
+        assertFalse(FieldVerifier.isCountInvalid(MAX_COUNT));
     }
 
     @Test
@@ -43,7 +41,7 @@ public class FieldVerifierTest {
 
     @Test(expectedExceptions = NumberFormatException.class)
     public void when_thread_delay_input_is_not_numeric_then_throw_exception() {
-        FieldVerifier.getNumberCount("something");
+        FieldVerifier.getThreadDelay("something");
     }
 
 }

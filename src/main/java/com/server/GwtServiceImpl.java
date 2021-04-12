@@ -5,7 +5,13 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class GwtServiceImpl extends RemoteServiceServlet implements GwtService {
 
+    private final static int MAX_TIMEOUT = 30000;
     private NumberSorter numberSorter;
+
+    @Override
+    public String gwtServer(int number) throws IllegalArgumentException {
+        return "Number is correct!";
+    }
 
     @Override
     public String sendOriginalArray(boolean isIncreasingOrder, int[] originalNumbers) {
@@ -16,7 +22,7 @@ public class GwtServiceImpl extends RemoteServiceServlet implements GwtService {
     }
     @Override
     public int[][] getCurrentArray() {
-        return numberSorter.getCurrentSortedArray();
+        return numberSorter.getCurrentSortedArray(MAX_TIMEOUT);
     }
 
 

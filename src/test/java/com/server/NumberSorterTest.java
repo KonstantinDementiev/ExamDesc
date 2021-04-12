@@ -26,8 +26,10 @@ public class NumberSorterTest {
         int[] actualArray = Arrays.copyOf(originalArray, originalArray.length);
         numberSorter = new NumberSorter(true, actualArray);
         numberSorter.start();
+        Thread.sleep(5);
+        int[][] responseArray = numberSorter.getCurrentSortedArray(1);
         numberSorter.join();
-        assertEquals(actualArray, expectedArrayUp);
+        assertEquals(responseArray[0], expectedArrayUp);
     }
 
     @Test
@@ -35,8 +37,10 @@ public class NumberSorterTest {
         int[] actualArray = Arrays.copyOf(originalArray, originalArray.length);
         numberSorter = new NumberSorter(false, actualArray);
         numberSorter.start();
+        Thread.sleep(5);
+        int[][] responseArray = numberSorter.getCurrentSortedArray(1);
         numberSorter.join();
-        assertEquals(actualArray, expectedArrayDown);
+        assertEquals(responseArray[0], expectedArrayDown);
     }
 
 }

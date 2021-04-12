@@ -6,6 +6,7 @@ public class NumberSorter extends Thread {
     private final int[] sortingArray;
     private int[] iterationIndexes;
     private int[][] responseArray;
+    private int timeout;
 
     public NumberSorter(boolean isIncreasingOrder, int[] sortingArray) {
         this.isIncreasingOrder = isIncreasingOrder;
@@ -20,7 +21,8 @@ public class NumberSorter extends Thread {
         iterationIndexes[0] = 1;
     }
 
-    public synchronized int[][] getCurrentSortedArray() {
+    public synchronized int[][] getCurrentSortedArray(int delay) {
+        timeout = delay;
         notify();
         responseArray[0] = sortingArray;
         responseArray[1] = iterationIndexes;
@@ -29,35 +31,31 @@ public class NumberSorter extends Thread {
 
     private void quickSort(int begin, int end) {
         if (begin < end) {
-            int partitionIndex = 0;
             try {
-                partitionIndex = partition(begin, end);
-                iterationIndexes[3] = partitionIndex;
-                iterationIndexes[4] = begin;
-                iterationIndexes[5] = end;
+                iterationIndexes[3] = partition(begin, end);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            quickSort(begin, partitionIndex - 1);
-            quickSort(partitionIndex + 1, end);
+            iterationIndexes[4] = begin;
+            iterationIndexes[5] = end;
+            quickSort(begin, iterationIndexes[3] - 1);
+            quickSort(iterationIndexes[3] + 1, end);
         }
     }
 
     private synchronized int partition(int begin, int end) throws InterruptedException {
         int pivot = sortingArray[end];
-        int i = (begin - 1);
-        iterationIndexes[1] = i;
+        iterationIndexes[1] = (begin - 1);
         for (int j = begin; j < end; j++) {
             if (getSortOrder(isIncreasingOrder, sortingArray[j], pivot)) {
-                i++;
-                iterationIndexes[1] = i;
-                rotateElements(i, j);
+                iterationIndexes[1]++;
+                rotateElements(iterationIndexes[1], j);
             }
             iterationIndexes[2] = j;
-            wait();
+            wait(timeout);
         }
-        rotateElements(i + 1, end);
-        return i + 1;
+        rotateElements(iterationIndexes[1] + 1, end);
+        return iterationIndexes[1] + 1;
     }
 
     private boolean getSortOrder(boolean isIncreasingOrder, int a, int b) {

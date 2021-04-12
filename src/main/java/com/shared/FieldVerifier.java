@@ -4,7 +4,7 @@ public class FieldVerifier {
 
     private final static int MIN_COUNT = 1;
     private final static int MAX_COUNT = 100;
-    private final static int DEFAULT_THREAD_SLEEP = 200;
+    private final static int DEFAULT_THREAD_SLEEP = 500;
 
     public static int getNumberCount(String number) {
         if (number == null) {

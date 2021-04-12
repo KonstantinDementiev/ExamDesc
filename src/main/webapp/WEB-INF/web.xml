@@ -5,7 +5,6 @@
          version="2.5"
          xmlns="http://java.sun.com/xml/ns/javaee">
 
-  <!-- Servlets -->
   <servlet>
     <servlet-name>greetServlet</servlet-name>
     <servlet-class>com.server.GwtServiceImpl</servlet-class>
@@ -15,8 +14,7 @@
     <servlet-name>greetServlet</servlet-name>
     <url-pattern>/gwt/index</url-pattern>
   </servlet-mapping>
-  
-  <!-- Default page to serve -->
+
   <welcome-file-list>
     <welcome-file>gwt.html</welcome-file>
   </welcome-file-list>

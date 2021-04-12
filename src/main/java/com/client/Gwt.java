@@ -16,7 +16,7 @@ import static com.client.WidgetExtractor.getWidget;
 
 public class Gwt implements EntryPoint {
 
-    private final static int DEFAULT_TIME_DELAY = 200;
+    private final static int DEFAULT_TIME_DELAY = 500;
     private final GwtServiceAsync gwtServiceAsync = GWT.create(GwtService.class);
     private VerticalPanel introScreenPanel;
     private HorizontalPanel sortScreenPanel;
@@ -31,7 +31,6 @@ public class Gwt implements EntryPoint {
 
         introScreenPanel = createIntroScreen();
         RootPanel.get("panelContainer").add(introScreenPanel);
-
         TextBox numberField = (TextBox) getWidget(DOM.getElementById("numberField"));
         numberField.setFocus(true);
 
@@ -93,13 +92,28 @@ public class Gwt implements EntryPoint {
     }
 
     private HorizontalPanel createSortScreen(int numberCount) {
+
+        originalNumbers = NumberGenerator.generateNumbers(numberCount);
+
+        HorizontalPanel horizontalPanel = new HorizontalPanel();
+        horizontalPanel.setStyleName("screenPanel");
+
+        createNumberColumns(numberCount, horizontalPanel);
+
+        VerticalPanel emptyColumn = createNewColumn();
+        emptyColumn.setWidth("100px");
+        horizontalPanel.add(emptyColumn);
+
+        VerticalPanel functionalColumn = createFunctionalPanel();
+        horizontalPanel.add(functionalColumn);
+        return horizontalPanel;
+    }
+
+    private void createNumberColumns(int numberCount, HorizontalPanel hp){
         final int maxButtonsInColumn = 10;
         int columnCount = numberCount / 10 + 1;
         int numberCountInColumn;
         int buttonIndex;
-        originalNumbers = NumberGenerator.generateNumbers(numberCount);
-        HorizontalPanel horizontalPanel = new HorizontalPanel();
-        horizontalPanel.setStyleName("screenPanel");
         VerticalPanel[] columns = new VerticalPanel[columnCount];
 
         for (int i = 0; i < columnCount; i++) {
@@ -108,33 +122,36 @@ public class Gwt implements EntryPoint {
             numberCountInColumn = Math.min(restNumbers, maxButtonsInColumn);
             for (int j = 0; j < numberCountInColumn; j++) {
                 buttonIndex = i * maxButtonsInColumn + j;
-                Button button = new Button();
-                button.setStyleName("button");
-                button.addStyleName("numberButton");
-                button.getElement().setId("button_" + buttonIndex);
-                button.setText(String.valueOf(originalNumbers[buttonIndex]));
-                class NumberButtonHandler implements ClickHandler {
-                    public void onClick(ClickEvent event) {
-                        if (Integer.parseInt(button.getText()) > 30) {
-                            showMessageBox("Please select a value smaller or equal to 30");
-                        } else {
-                            originalNumbers = NumberGenerator.generateNumbers(numberCount);
-                            sortedNumbers = originalNumbers;
-                            changeButtonsView(new int[]{0});
-                        }
-                    }
-                }
-                button.addClickHandler(new NumberButtonHandler());
-                columns[i].add(button);
+                filingColumnByButtons(buttonIndex, numberCount, columns[i]);
             }
-            horizontalPanel.add(columns[i]);
+            hp.add(columns[i]);
         }
-        VerticalPanel emptyColumn = createNewColumn();
-        emptyColumn.setWidth("100px");
-        horizontalPanel.add(emptyColumn);
-        VerticalPanel functionalColumn = createFunctionalPanel();
-        horizontalPanel.add(functionalColumn);
-        return horizontalPanel;
+    }
+
+    private void filingColumnByButtons(int buttonIndex, int numberCount, VerticalPanel column){
+        Button button = createNumberButton(buttonIndex);
+        class NumberButtonHandler implements ClickHandler {
+            public void onClick(ClickEvent event) {
+                if (Integer.parseInt(button.getText()) > 30) {
+                    showMessageBox("Please select a value smaller or equal to 30");
+                } else {
+                    originalNumbers = NumberGenerator.generateNumbers(numberCount);
+                    sortedNumbers = Arrays.copyOf(originalNumbers, originalNumbers.length);
+                    changeButtonsView(new int[]{0});
+                    allButtonsSetSortedView("numberButtonSorted");
+                }
+            }
+        }
+        button.addClickHandler(new NumberButtonHandler());
+        column.add(button);
+    }
+
+    private Button createNumberButton(int index){
+        Button button = new Button();
+        button.setStyleName("numberButtonSorted");
+        button.getElement().setId("button_" + index);
+        button.setText(String.valueOf(originalNumbers[index]));
+        return button;
     }
 
     private VerticalPanel createFunctionalPanel() {
@@ -154,10 +171,7 @@ public class Gwt implements EntryPoint {
 
         class ResetButtonHandler implements ClickHandler {
             public void onClick(ClickEvent event) {
-                sortedNumbers = null;
-                sortScreenPanel.clear();
-                introScreenPanel.setVisible(true);
-                if (elapsedTimer != null) elapsedTimer.cancel();
+                clickResetButton();
             }
         }
         resetButton.addClickHandler(new ResetButtonHandler());
@@ -166,35 +180,13 @@ public class Gwt implements EntryPoint {
             public void onClick(ClickEvent event) {
                 sortNumbers();
             }
-
             public void onKeyDown(KeyDownEvent event) {
                 if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
                     sortNumbers();
                 }
             }
-
             private void sortNumbers() {
-                isSortingGoOn = true;
-                if (elapsedTimer != null) elapsedTimer.cancel();
-                int timeDelayInput = FieldVerifier.getThreadDelay(speedInput.getText());
-                int timeDelay = timeDelayInput == DEFAULT_TIME_DELAY
-                        ? DEFAULT_TIME_DELAY : timeDelayInput * 1000;
-                if (sortedNumbers == null) {
-                    sortedNumbers = Arrays.copyOf(originalNumbers, originalNumbers.length);
-                }
-                isIncreasingOrder = !isIncreasingOrder;
-                sendOriginalArrayToServer();
-                elapsedTimer = new Timer() {
-                    public void run() {
-                        if (!isSortingGoOn) {
-                            allButtonsSetSortedView();
-                            elapsedTimer.cancel();
-                        } else {
-                            getCurrentArrayFromServer();
-                        }
-                    }
-                };
-                elapsedTimer.scheduleRepeating(timeDelay);
+                clickSortButton(speedInput.getText());
             }
         }
         sortButton.addClickHandler(new SortButtonHandler());
@@ -205,6 +197,38 @@ public class Gwt implements EntryPoint {
         functionalPanel.add(speedInput);
 
         return functionalPanel;
+    }
+
+    private void clickResetButton(){
+        sortedNumbers = null;
+        sortScreenPanel.clear();
+        introScreenPanel.setVisible(true);
+        if (elapsedTimer != null) elapsedTimer.cancel();
+    }
+
+    private void clickSortButton(String speedText){
+        isSortingGoOn = true;
+        if (elapsedTimer != null) elapsedTimer.cancel();
+        int timeDelayInput = FieldVerifier.getThreadDelay(speedText);
+        int timeDelay = timeDelayInput == DEFAULT_TIME_DELAY
+                ? DEFAULT_TIME_DELAY : timeDelayInput * 1000;
+        if (sortedNumbers == null) {
+            sortedNumbers = Arrays.copyOf(originalNumbers, originalNumbers.length);
+        }
+        allButtonsSetSortedView("numberButtonUnsorted");
+        isIncreasingOrder = !isIncreasingOrder;
+        sendOriginalArrayToServer();
+        elapsedTimer = new Timer() {
+            public void run() {
+                if (!isSortingGoOn) {
+                    allButtonsSetSortedView("numberButtonSorted");
+                    elapsedTimer.cancel();
+                } else {
+                    getCurrentArrayFromServer();
+                }
+            }
+        };
+        elapsedTimer.scheduleRepeating(timeDelay);
     }
 
     private void sendOriginalArrayToServer() {
@@ -261,8 +285,7 @@ public class Gwt implements EntryPoint {
         for (int k = 0; k < sortedNumbers.length; k++) {
             Button button = (Button) getWidget(DOM.getElementById("button_" + k));
             button.setText(String.valueOf(sortedNumbers[k]));
-            button.setStyleName("button");
-            button.addStyleName("numberButton");
+            button.setStyleName("numberButtonUnsorted");
             for (int i = 1; i < indexes.length; i++) {
                 if (k == indexes[i]) {
                     button.addStyleName("buttonIterated" + i);
@@ -271,11 +294,10 @@ public class Gwt implements EntryPoint {
         }
     }
 
-    private void allButtonsSetSortedView() {
+    private void allButtonsSetSortedView(String styleName) {
         for (int k = 0; k < originalNumbers.length; k++) {
             Button button = (Button) getWidget(DOM.getElementById("button_" + k));
-            button.setStyleName("numberButtonSorted");
+            button.setStyleName(styleName);
         }
     }
-
 }

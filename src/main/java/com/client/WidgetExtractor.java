@@ -8,6 +8,9 @@ import com.google.gwt.user.client.ui.Widget;
 public class WidgetExtractor {
 
     public static IsWidget getWidget(com.google.gwt.dom.client.Element element) {
+        if (element == null) {
+            throw new IllegalArgumentException();
+        }
         EventListener listener = DOM.getEventListener(element);
         if (listener == null) {
             throw new IllegalArgumentException();

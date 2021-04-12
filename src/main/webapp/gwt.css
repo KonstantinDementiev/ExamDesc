@@ -88,14 +88,6 @@ h1 {
     text-align: center;
 }
 
-.numberButton {
-    margin-top: 10px;
-    padding: 10px 0;
-    width: 100px;
-    background-color: #008CBA;
-    color: white;
-}
-
 .numberButtonSorted {
     font-size: 18px;
     display: inline-block;
@@ -106,7 +98,21 @@ h1 {
     margin-top: 10px;
     padding: 10px 0;
     width: 100px;
-    background-color: #0fbd09;
+    background-color: #008CBA;
+    color: white;
+}
+
+.numberButtonUnsorted {
+    font-size: 18px;
+    display: inline-block;
+    border-radius: 4px;
+    text-align: center;
+    justify-self: center;
+    align-self: center;
+    margin-top: 10px;
+    padding: 10px 0;
+    width: 100px;
+    background-color: #169516;
     color: white;
 }
 
@@ -116,22 +122,21 @@ h1 {
 }
 
 .buttonIterated2{
-    outline: 5px solid #f7ff00;
+    outline: 5px solid #ffe900;
     outline-offset: -5px;
 }
 
 .buttonIterated3{
-    outline: 5px solid #45d900;
-    outline-offset: -5px;
+    background-color: #7a0589;
 }
 
 .buttonIterated4{
-    outline: 5px solid #df02fa;
+    outline: 5px solid #0329e5;
     outline-offset: -5px;
 }
 
 .buttonIterated5{
-    outline: 5px solid #00ffec;
+    outline: 5px solid #09b8ab;
     outline-offset: -5px;
 }
 
@@ -151,6 +156,3 @@ h1 {
     text-align: center;
 }
 
-.gwt-DialogBox {
-    width: 400px;
-}
