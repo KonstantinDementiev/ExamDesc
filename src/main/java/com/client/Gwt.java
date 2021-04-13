@@ -141,8 +141,10 @@ public class Gwt implements EntryPoint {
                 if (Integer.parseInt(button.getText()) > 30) {
                     showMessageBox("Please select a value smaller or equal to 30");
                 } else {
+                    sortedNumbers = null;
+                    int newNumberCount = Integer.parseInt(button.getText());
                     sortScreenPanel.clear();
-                    sortScreenPanel = createSortScreen(number);
+                    sortScreenPanel = createSortScreen(newNumberCount);
                     RootPanel.get("panelContainer").add(sortScreenPanel);
                 }
             }
